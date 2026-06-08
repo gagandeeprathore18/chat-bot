@@ -1,34 +1,33 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatInterface from '../../components/ChatInterface';
 import ThemeToggle from '../../components/ThemeToggle';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 
 export default function ChatPage() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { session, loading, signOut } = useAuth();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session) {
-        router.replace('/');
-        return;
-      }
-      setIsAuthenticated(true);
-    };
+    if (!loading && !session) {
+      router.replace('/');
+    }
+  }, [session, loading, router]);
 
-    checkSession();
-  }, [router]);
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-zinc-500">Loading...</p>
+      </div>
+    );
+  }
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
-    router.push('/');
-  };
+  if (!session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-zinc-50/40 dark:bg-zinc-950/80 transition-colors duration-300">
@@ -46,10 +45,10 @@ export default function ChatPage() {
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Help Center</span>
           </Link>
-          {isAuthenticated && (
+          {session && (
             <button
               type="button"
-              onClick={handleSignOut}
+              onClick={signOut}
               className="text-xs font-semibold px-3 py-1 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-200 dark:text-zinc-950 dark:hover:bg-zinc-100 transition-all"
             >
               Sign out

@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
         source: "gemini"
       });
 
-    } catch (geminiError: any) {
-      console.error("Gemini Error:", geminiError);
+    } catch (geminiError: any) { 
+      console.log("Gemini Error:", geminiError);
 
       // ✅ HANDLE OVERLOAD / 503
       if (
