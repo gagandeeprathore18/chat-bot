@@ -45,14 +45,14 @@ export default function ChatInterface() {
 
       setUserId(session.user.id);
 
-      const { data, error } = await supabase
+          const { data, error } = await supabase
         .from('conversations')
-        .select('*')
+        .select('id, title, created_at, messages')
         .eq('user_id', session.user.id)
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading conversations:', error);
+        console.error('Error loading conversations:', error.message || error);
         return;
       }
 
@@ -95,20 +95,19 @@ export default function ChatInterface() {
         user_id: userId,
         title: chat.title,
         messages: chat.messages,
+        created_at: chat.createdAt,
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'id' }
     );
 
     if (error) {
-      console.error('Error saving conversation:', error);
+      console.error('Error saving conversation:', error.message || error);
     }
   };
 
   const createNewChat = async (currentUserId?: string) => {
-    if (!currentUserId) {
-      currentUserId = userId ?? undefined;
-    }
+    currentUserId = currentUserId ?? userId ?? undefined;
 
     const newChat: conversation = {
       id: crypto.randomUUID(),
@@ -128,7 +127,7 @@ export default function ChatInterface() {
     setActiveChatId(newChat.id);
 
     if (currentUserId) {
-      await supabase.from('conversations').insert({
+      const { error } = await supabase.from('conversations').insert({
         id: newChat.id,
         user_id: currentUserId,
         title: newChat.title,
@@ -136,6 +135,10 @@ export default function ChatInterface() {
         created_at: newChat.createdAt,
         updated_at: newChat.createdAt,
       });
+
+      if (error) {
+        console.error('Error creating initial conversation:', error.message || error);
+      }
     }
   };
 
