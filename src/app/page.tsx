@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ThemeToggle from '../components/ThemeToggle';
+import AuthModal from '../components/AuthModal';
+import { supabase } from '@/lib/supabaseClient';
 import { 
   Search, MessageSquare, Layers, Terminal, 
   ChevronRight, Settings, CreditCard, ShieldAlert 
@@ -12,12 +14,24 @@ import {
 export default function Home() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [authOpen, setAuthOpen] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/faq?query=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleLaunchSupport = async () => {
+    if (typeof window !== 'undefined') {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/chat');
+        return;
+      }
+    }
+    setAuthOpen(true);
   };
 
   return (
@@ -31,9 +45,6 @@ export default function Home() {
       {/* Main Navigation Header */}
       <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/30">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 dark:from-emerald-500 dark:to-teal-300 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-            <span className="font-bold text-lg select-none">A</span>
-          </div>
           <div>
             <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">ChatBot</span>
             <span className="text-zinc-400 dark:text-zinc-500 text-xs block -mt-0.5">Developer Support Hub</span>
@@ -41,13 +52,6 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4">
-          <Link
-            href="/faq"
-            className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-          >
-            Browse All FAQs
-          </Link>
-          <span className="text-zinc-250 dark:text-zinc-800">|</span>
           <ThemeToggle />
         </div>
       </header>
@@ -67,27 +71,6 @@ export default function Home() {
           <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-405 leading-relaxed">
             Search our dynamic knowledge base, browse categories below, or start a live chatbot session for immediate technical support.
           </p>
-
-          {/* Search bar */}
-          <form 
-            onSubmit={handleSearchSubmit} 
-            className="pt-4 max-w-lg mx-auto relative flex items-center bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-xl p-1.5 shadow-md focus-within:ring-2 focus-within:ring-emerald-500/40 transition-all duration-300"
-          >
-            <Search className="w-5 h-5 text-zinc-400 ml-3 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search API keys, limits, 401 errors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm bg-transparent border-none outline-none text-zinc-800 dark:text-zinc-100 placeholder-zinc-400"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 font-semibold text-xs transition-all cursor-pointer"
-            >
-              Search
-            </button>
-          </form>
         </div>
 
         {/* Action Panel: Launch Chat */}
@@ -101,75 +84,42 @@ export default function Home() {
               Launch our interactive support chat assistant to resolve issues, get codes, and query details instantly.
             </p>
           </div>
-          <Link
-            href="/chat"
+          <button
+            type="button"
+            onClick={handleLaunchSupport}
             className="w-full md:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 font-bold text-sm text-center shadow-md shadow-emerald-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <span>Launch Live Support Chat</span>
             <ChevronRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
 
-        {/* FAQ Categories Grid */}
-        <div className="w-full max-w-4xl space-y-4">
-          <h3 className="font-bold text-sm text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Browse Help Categories</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            
-            <Link
-              href="/faq?category=general"
-              className="p-5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-emerald-500/35 transition-all cursor-pointer group flex flex-col justify-between h-40"
-            >
-              <div className="w-10 h-10 rounded-lg bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-650 dark:text-indigo-400 flex items-center justify-center">
-                <Layers className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 group-hover:text-emerald-500 transition-colors">General</h4>
-                <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-1 leading-relaxed">Introduction, trial options, and platforms.</p>
-              </div>
-            </Link>
+        {/* Browse All FAQs Panel (replaces categories) */}
+        <div className="w-full max-w-4xl">
+          <h3 className="font-bold text-sm text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Browse All FAQs</h3>
 
-            <Link
-              href="/faq?category=billing"
-              className="p-5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-emerald-500/35 transition-all cursor-pointer group flex flex-col justify-between h-40"
-            >
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 text-emerald-650 dark:text-emerald-400 flex items-center justify-center">
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 group-hover:text-emerald-500 transition-colors">Billing & Account</h4>
-                <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-1 leading-relaxed">Payment gateways, cancellation, and invoices.</p>
-              </div>
-            </Link>
+          <div className="mt-4 p-6 rounded-2xl border bg-white/40 dark:bg-zinc-900/20 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h4 className="text-lg font-semibold text-zinc-900 dark:text-white">Explore our full knowledge base</h4>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Find answers to common developer questions, troubleshooting steps, and API guidance in one place.</p>
+            </div>
 
-            <Link
-              href="/faq?category=technical"
-              className="p-5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-emerald-500/35 transition-all cursor-pointer group flex flex-col justify-between h-40"
-            >
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 dark:bg-amber-400/10 text-amber-650 dark:text-amber-400 flex items-center justify-center">
-                <Settings className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 group-hover:text-emerald-500 transition-colors">Technical & API</h4>
-                <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-1 leading-relaxed">Webhooks, rate limits, keys, and schemas.</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/faq?category=troubleshoot"
-              className="p-5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-emerald-500/35 transition-all cursor-pointer group flex flex-col justify-between h-40"
-            >
-              <div className="w-10 h-10 rounded-lg bg-rose-500/10 dark:bg-rose-400/10 text-rose-650 dark:text-rose-400 flex items-center justify-center">
-                <ShieldAlert className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-zinc-800 dark:text-zinc-200 group-hover:text-emerald-500 transition-colors">Troubleshooting</h4>
-                <p className="text-[10px] text-zinc-450 dark:text-zinc-500 mt-1 leading-relaxed">401 Errors, passwords, and logs debugs.</p>
-              </div>
-            </Link>
-
+            <div className="flex-shrink-0">
+              <Link
+                href="/faq"
+                className="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-md"
+              >
+                Browse All FAQs
+              </Link>
+            </div>
           </div>
         </div>
 
+        <AuthModal
+          open={authOpen}
+          onClose={() => setAuthOpen(false)}
+          onSuccess={() => router.push('/chat')}
+        />
       </main>
 
       {/* Footer */}
