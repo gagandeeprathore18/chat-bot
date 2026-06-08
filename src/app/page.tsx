@@ -35,8 +35,8 @@ export default function Home() {
             <span className="font-bold text-lg select-none">A</span>
           </div>
           <div>
-            <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">Antigravity</span>
-            <span className="text-zinc-400 dark:text-zinc-500 text-xs block -mt-0.5">Developer Portal</span>
+            <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">ChatBot</span>
+            <span className="text-zinc-400 dark:text-zinc-500 text-xs block -mt-0.5">Developer Support Hub</span>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full border-t border-zinc-200/50 dark:border-zinc-800/30 py-6 mt-12">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-400 dark:text-zinc-500">
-          <p>© {new Date().getFullYear()} Antigravity Systems Inc. Help Center.</p>
+          <p>© {new Date().getFullYear()} ChatBot for Developers.</p>
           <div className="flex items-center gap-6 font-medium">
             <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">Developer Docs</a>
             <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">API Reference</a>

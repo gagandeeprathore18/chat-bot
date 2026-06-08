@@ -30,7 +30,7 @@ export default function ChatPage() {
       {/* Footer */}
       <footer className="w-full border-t border-zinc-200/50 dark:border-zinc-800/30 py-4">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
-          <p>© {new Date().getFullYear()} Antigravity Systems. Support Chat Client.</p>
+          <p>© {new Date().getFullYear()} ChatBot.</p>
         </div>
       </footer>
     </div>

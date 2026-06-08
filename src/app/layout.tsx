@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Antigravity FAQ Assistant | Developer Help Hub",
+  title: "Developer Help Hub",
   description: "Get instant answers to technical configurations, billing queries, and platform details with our interactive support bot.",
 };
 
