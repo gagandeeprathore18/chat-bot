@@ -41,10 +41,10 @@ export default function ChatPage() {
         {/* Left Side */}
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-xs font-semibold text-zinc-650 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-s font-semibold text-zinc-650 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Help Center</span>
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Home</span>
         </Link>
 
         {/* Right Side */}
@@ -54,7 +54,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={signOut}
-              className="text-xs font-semibold px-3 py-1 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-200 dark:text-zinc-950 dark:hover:bg-zinc-100 transition-all"
+              className="text-s font-semibold px-3 py-1 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-200 dark:text-zinc-950 dark:hover:bg-zinc-100 transition-all"
             >
               Sign out
             </button>

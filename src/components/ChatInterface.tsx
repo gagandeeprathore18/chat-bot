@@ -1,15 +1,17 @@
 'use client';
 
-import { useRef, useEffect, ReactNode } from 'react';
+import { useRef, useEffect, useState, ReactNode } from 'react';
 import {
   Plus,
-  Menu,
   ArrowUp,
+  PanelLeftClose,
+  PanelLeftOpen,
   RotateCcw,
   Sparkles
 } from 'lucide-react';
 import { useChat } from '@/contexts/ChatContext';
 
+// Normalizes common Gemini markdown quirks before rendering.
 function formatBotText(text: string) {
   return text
     .replace(/\s+\*\s+(?=\*\*)/g, '\n\n* ')
@@ -18,6 +20,7 @@ function formatBotText(text: string) {
     .trim();
 }
 
+// Handles the inline markdown styles this chat UI supports.
 function renderInlineMarkdown(text: string) {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
 
@@ -45,6 +48,7 @@ function renderInlineMarkdown(text: string) {
   });
 }
 
+// Renders bot markdown in a ChatGPT/Gemini-like readable layout.
 function BotMessage({ text }: { text: string }) {
   const lines = formatBotText(text).split('\n');
   const blocks: ReactNode[] = [];
@@ -124,6 +128,7 @@ export default function ChatInterface() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Auto scroll
   useEffect(() => {
@@ -157,41 +162,59 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full bg-white text-[#1f1f1f] font-sans overflow-hidden selection:bg-blue-200">
+    <div className="relative flex h-full min-h-0 w-full bg-white text-[#1f1f1f] font-sans overflow-hidden selection:bg-blue-200">
+
+      {/* Sidebar collapse toggle, styled like the reference divider button. */}
+      <button
+        type="button"
+        onClick={() => setIsSidebarCollapsed((value) => !value)}
+        aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        className={`absolute top-5 z-30 hidden h-9 w-9 items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#444746] shadow-sm transition-[left,background-color,box-shadow] duration-300 hover:bg-[#f8fafd] hover:shadow-md md:flex ${isSidebarCollapsed ? 'left-4' : 'left-[298px]'
+          }`}
+      >
+        {isSidebarCollapsed ? (
+          <PanelLeftOpen size={18} strokeWidth={1.8} />
+        ) : (
+          <PanelLeftClose size={18} strokeWidth={1.8} />
+        )}
+      </button>
 
       {/* Sidebar */}
-      <div className="w-[280px] bg-[#f0f4f9] flex-col hidden md:flex transition-all duration-300">
-        <div className="p-4 flex items-center gap-4">
-          {/* <button className="p-2 hover:bg-[#e1e5ea] rounded-full transition-colors">
-            <Menu size={20} className="text-[#444746]" />
-          </button> */}
-        </div>
+      <div
+        className={`hidden shrink-0 overflow-hidden border-r border-[#dde3ea] bg-[#f0f4f9] transition-[width] duration-300 ease-out md:flex ${isSidebarCollapsed ? 'w-0 border-r-0' : 'w-[280px]'
+          }`}
+      >
+        <div className="flex h-full w-[280px] shrink-0 flex-col">
+          <div className="flex items-center text-xl font-bold text-[#1f1f1f] mt-4 px-4" > Welcome to ChatBot!  </div>
+          <div className="h-2 shrink-0" />
 
-        <div className="px-4 py-2">
-          <button
-            onClick={createNewChat}
-            className="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#c2c8d1] text-[#1f1f1f] text-sm font-medium px-4 py-3 rounded-full transition-colors shadow-sm"
-          >
-            <Plus size={18} />
-            New chat
-          </button>
-        </div>
+          <div className="px-4 py-2">
+            <button
+              onClick={createNewChat}
+              className="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#c2c8d1] text-[#1f1f1f] text-sm font-medium px-4 py-3 rounded-full transition-colors shadow-sm"
+            >
+              <Plus size={18} />
+              New chat
+            </button>
+          </div>
 
-        <div className="flex-1 overflow-y-auto px-4 mt-6">
-          <p className="text-xs font-semibold text-[#444746] mb-3 px-3">Recents</p>
-          <div className="flex flex-col gap-1">
-            {conversations.map((chat) => (
-              <button
-                key={chat.id}
-                onClick={() => setActiveChatId(chat.id)}
-                className={`w-full text-left px-3 py-2.5 rounded-full text-sm truncate transition-colors ${activeChatId === chat.id
+          <div className="flex-1 overflow-y-auto px-4 mt-6">
+            <p className="text-xs font-semibold text-[#444746] mb-3 px-3">Recents</p>
+            <div className="flex flex-col gap-1">
+              {conversations.map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => setActiveChatId(chat.id)}
+                  className={`w-full text-left px-3 py-2.5 rounded-full text-sm truncate transition-colors ${activeChatId === chat.id
                     ? 'bg-[#e1e5ea] text-[#1f1f1f] font-medium'
                     : 'text-[#444746] hover:bg-[#e1e5ea]'
-                  }`}
-              >
-                {chat.title}
-              </button>
-            ))}
+                    }`}
+                >
+                  {chat.title}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -211,14 +234,15 @@ export default function ChatInterface() {
           {isChatEmpty ? (
             <div className="w-full h-full flex flex-col items-center justify-center mt-[-10vh]">
               <h1 className="text-[2.5rem] text-center font-normal text-[#1f1f1f] mb-8 tracking-tight">
-                Hi, let&apos;s get into it
+                Hi, let's get into it
               </h1>
             </div>
           ) : (
-            <div className="w-full px-4 md:px-8 lg:px-12 py-6 space-y-8 pb-32">
+            <div className="w-full px-4 md:px-8 lg:px-12 pt-16 pb-32 space-y-8">
               {activeConversation?.messages.map((msg, index) => {
                 const nextMessage = activeConversation.messages[index + 1];
                 const nextMessageText = nextMessage?.text.toLowerCase() || '';
+                // Show retry only when this user message received a fallback response.
                 const canRegenerate =
                   msg.sender === 'user' &&
                   nextMessage?.sender === 'bot' &&
@@ -234,8 +258,8 @@ export default function ChatInterface() {
                   >
                     <div
                       className={`flex gap-4 max-w-[100%] ${msg.sender === 'user'
-                          ? 'bg-[#f0f4f9] px-5 py-3.5 rounded-3xl text-[15px] leading-relaxed text-[#1f1f1f]'
-                          : 'text-[15px] leading-relaxed text-[#1f1f1f]'
+                        ? 'bg-[#f0f4f9] px-5 py-3.5 rounded-3xl text-[15px] leading-relaxed text-[#1f1f1f]'
+                        : 'text-[15px] leading-relaxed text-[#1f1f1f]'
                         }`}
                     >
                       {msg.sender !== 'user' && msg.id !== 'welcome' && (

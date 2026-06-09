@@ -69,7 +69,7 @@ export default function Home() {
             How can we help you today?
           </h1>
           <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-405 leading-relaxed">
-            Search our dynamic knowledge base, browse categories below, or start a live chatbot session for immediate technical support.
+            Search our dynamic knowledge base or start a live chatbot session for immediate technical support.
           </p>
         </div>
 

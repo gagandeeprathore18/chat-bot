@@ -11,4 +11,5 @@ export interface conversation {
     messages: message[];
     createdAt: string;
     title: string;
+    summary?: string;
 }
