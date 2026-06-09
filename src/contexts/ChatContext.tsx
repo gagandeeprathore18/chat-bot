@@ -175,6 +175,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    const chathistory = activeConversation?.messages.slice(-10) || [];
+
     const userMsg: message = {
       id: genId(),
       sender: 'user',
@@ -211,7 +213,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ 
+          text: text,
+          history: chathistory 
+        }),
       });
 
       if (!res.ok) {

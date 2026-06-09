@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
-    const { text } = await request.json();
+    const { text, history } = await request.json();
 
     // 1. Clean input
     const cleanText = (text || '').trim();
@@ -45,7 +45,28 @@ export async function POST(request: NextRequest) {
         model: "gemini-3.5-flash",
       });
 
-      const result = await model.generateContent(cleanText);
+
+      // Format history for Gemini (simple "User: ... / Bot: ..." format)
+      let formattedHistory = "";
+      if (history && Array.isArray(history)) { //checking if history exists and is an array which is non empty.
+        formattedHistory = history.map((msg: any) => {
+          const role = msg.sender === 'user' ? 'User' : 'Bot';
+          return `${role}: ${msg.text}`;
+        }).join("\n");
+      }
+
+      // generating a master prompt for gemini which includes the recent conversation history for context and the latest user message. This helps gemini to generate a more relevant response.
+      const MasterPrompt = `
+      You are a helpful AI assistant.
+      here is the recent conversation history for context:
+      ${formattedHistory ? formattedHistory : "No prior conversation history."}
+
+      Based on the above conversation, generate a helpful and relevant response to the user's latest message:
+      User: "${cleanText}"
+      Bot: ''
+      `;
+
+      const result = await model.generateContent(MasterPrompt);
       const response = await result.response;
       const aiText = response.text();
 
@@ -54,7 +75,7 @@ export async function POST(request: NextRequest) {
         source: "gemini"
       });
 
-    } catch (geminiError: any) { 
+    } catch (geminiError: any) {
       console.log("Gemini Error:", geminiError);
 
       // ✅ HANDLE OVERLOAD / 503
