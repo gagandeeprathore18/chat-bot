@@ -122,7 +122,7 @@ export default function AuthModal({
       >
         <div className="flex items-center justify-between gap-4 mb-6">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400 font-semibold">
+            <p className="text-sm uppercase tracking-[0.2em] text-sky-600 dark:text-sky-400 font-semibold">
               {mode === "login" ? "Sign in" : "Sign up"}
             </p>
             <h2 className="text-2xl font-bold text-zinc-950 dark:text-white">
@@ -170,7 +170,7 @@ export default function AuthModal({
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
+                className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-sky-500"
                 placeholder="Jane Doe"
               />
             </label>
@@ -182,7 +182,7 @@ export default function AuthModal({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
+              className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-sky-500"
               placeholder="you@example.com"
             />
           </label>
@@ -193,7 +193,7 @@ export default function AuthModal({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-emerald-500"
+              className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-sky-500"
               placeholder="Enter password"
             />
           </label>
@@ -204,7 +204,7 @@ export default function AuthModal({
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-70"
             disabled={loading}
           >
             {loading ? "Working…" : mode === "login" ? "Sign in" : "Create account"}

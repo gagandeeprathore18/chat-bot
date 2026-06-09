@@ -153,7 +153,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) {
-        console.error('Error creating conversation:', {
+        console.log('Error creating conversation:', {
           code: error.code,
           message: error.message,
           details: error.details,

@@ -107,7 +107,7 @@ function FAQContent() {
                   </span>
 
                   {isOpen ? (
-                    <ChevronUp className="w-5 h-5 text-emerald-500" />
+                    <ChevronUp className="w-5 h-5 text-sky-500" />
                   ) : (
                     <ChevronDown className="w-5 h-5 text-zinc-400" />
                   )}
@@ -120,7 +120,7 @@ function FAQContent() {
                     <div className="mt-4 flex justify-between items-center">
                       <Link
                         href="/chat"
-                        className="text-xs text-emerald-600 flex items-center gap-1"
+                        className="text-xs text-sky-600 flex items-center gap-1"
                       >
                         <MessageSquare className="w-3 h-3" />
                         Ask in chat
