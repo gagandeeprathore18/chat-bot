@@ -22,51 +22,48 @@ export async function POST(request: NextRequest) {
 
     const query = cleanText.toLowerCase();
 
-    // 2. FAQ MATCHING (FAST LAYER)
-    const matchedFAQ = FAQS.find(faq => {
-      const questionMatch = faq.question.toLowerCase().includes(query);
-      const keywordMatch = faq.keywords.some(kw =>
-        query.includes(kw.toLowerCase())
-      );
-      return questionMatch || keywordMatch;
-    });
+    // // 2. FAQ MATCHING (FAST LAYER)
+    // const matchedFAQ = FAQS.find(faq => {
+    //   const questionMatch = faq.question.toLowerCase().includes(query);
+    //   const keywordMatch = faq.keywords.some(kw =>
+    //     query.includes(kw.toLowerCase())
+    //   );
+    //   return questionMatch || keywordMatch;
+    // });
 
-    if (matchedFAQ) {
-      return NextResponse.json({
-        text: matchedFAQ.answer,
-        faqId: matchedFAQ.id, // ✅ FIXED (was question earlier)
-        source: "faq"
-      });
-    }
+    // if (matchedFAQ) {
+    //   return NextResponse.json({
+    //     text: matchedFAQ.answer,
+    //     faqId: matchedFAQ.id, // ✅ FIXED (was question earlier)
+    //     source: "faq"
+    //   });
+    // }
 
-    // 3. GEMINI FALLBACK (SMART LAYER)
+    // 3. GEMINI FALLBACK - using the bento gemini approach. System instruction is passed here.
     try {
       const model = genAI.getGenerativeModel({
         model: "gemini-3.5-flash",
+        systemInstruction : "You are a helpful AI assistant. Answer clearly and concisely. Format responses in clean Markdown like ChatGPT: use short paragraphs, bullet lists when useful, bold only for important labels, and keep each bullet on its own line."
       });
 
+      // formatting the history for gemnini in its desired format. acts as a filling cabinet. 
+        let geminiHistory: any[] = [];
 
-      // Format history for Gemini (simple "User: ... / Bot: ..." format)
-      let formattedHistory = "";
       if (history && Array.isArray(history)) { //checking if history exists and is an array which is non empty.
-        formattedHistory = history.map((msg: any) => {
-          const role = msg.sender === 'user' ? 'User' : 'Bot';
-          return `${role}: ${msg.text}`;
-        }).join("\n");
+        geminiHistory = history.map((msg: any) => ({
+          role: msg.sender === 'user' ? 'user':"model",
+          parts : [{text:msg.text}]
+        }))   
       }
+      // adding the latest user message to the gemini history as well.
+      geminiHistory.push({ 
+        role: 'user',
+        parts: [{ text: cleanText }]
+      });
 
-      // generating a master prompt for gemini which includes the recent conversation history for context and the latest user message. This helps gemini to generate a more relevant response.
-      const MasterPrompt = `
-      You are a helpful AI assistant.
-      here is the recent conversation history for context:
-      ${formattedHistory ? formattedHistory : "No prior conversation history."}
-
-      Based on the above conversation, generate a helpful and relevant response to the user's latest message:
-      User: "${cleanText}"
-      Bot: ''
-      `;
-
-      const result = await model.generateContent(MasterPrompt);
+      const result = await model.generateContent({
+        contents: geminiHistory
+      })
       const response = await result.response;
       const aiText = response.text();
 

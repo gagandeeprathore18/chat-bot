@@ -3,6 +3,8 @@ export interface message {
     sender: 'user' | 'bot';
     text: string;
     timestamp: string;
+    isFallback?: boolean;
+    source?: string;
 }
 export interface conversation {
     id: string;

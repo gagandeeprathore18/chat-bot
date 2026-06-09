@@ -1,15 +1,113 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, ReactNode } from 'react';
 import {
   Plus,
   Menu,
-  Mic,
   ArrowUp,
-  ChevronDown,
+  RotateCcw,
   Sparkles
 } from 'lucide-react';
 import { useChat } from '@/contexts/ChatContext';
+
+function formatBotText(text: string) {
+  return text
+    .replace(/\s+\*\s+(?=\*\*)/g, '\n\n* ')
+    .replace(/\s+(\d+\.\s+)(?=\*\*|[A-Z])/g, '\n\n$1')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function renderInlineMarkdown(text: string) {
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={index} className="font-semibold">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code
+          key={index}
+          className="rounded bg-[#eef2f7] px-1.5 py-0.5 font-mono text-[0.92em]"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+
+    return part;
+  });
+}
+
+function BotMessage({ text }: { text: string }) {
+  const lines = formatBotText(text).split('\n');
+  const blocks: ReactNode[] = [];
+  let listItems: ReactNode[] = [];
+
+  const flushList = () => {
+    if (!listItems.length) return;
+
+    blocks.push(
+      <ul key={`list-${blocks.length}`} className="my-2 list-disc space-y-1.5 pl-5">
+        {listItems}
+      </ul>
+    );
+    listItems = [];
+  };
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushList();
+      return;
+    }
+
+    if (/^#{1,3}\s+/.test(trimmed)) {
+      flushList();
+      blocks.push(
+        <p key={index} className="mt-3 first:mt-0 font-semibold">
+          {renderInlineMarkdown(trimmed.replace(/^#{1,3}\s+/, ''))}
+        </p>
+      );
+      return;
+    }
+
+    if (/^[-*]\s+/.test(trimmed)) {
+      listItems.push(
+        <li key={index}>{renderInlineMarkdown(trimmed.replace(/^[-*]\s+/, ''))}</li>
+      );
+      return;
+    }
+
+    if (/^\d+\.\s+/.test(trimmed)) {
+      flushList();
+      blocks.push(
+        <p key={index} className="mt-2 first:mt-0">
+          {renderInlineMarkdown(trimmed)}
+        </p>
+      );
+      return;
+    }
+
+    flushList();
+    blocks.push(
+      <p key={index} className="mt-2 first:mt-0">
+        {renderInlineMarkdown(trimmed)}
+      </p>
+    );
+  });
+
+  flushList();
+
+  return <div className="max-w-3xl space-y-1 leading-7">{blocks}</div>;
+}
 
 export default function ChatInterface() {
   const {
@@ -18,6 +116,7 @@ export default function ChatInterface() {
     setActiveChatId,
     createNewChat,
     sendMessage,
+    regenerateMessage,
     isTyping,
     loading,
     activeConversation,
@@ -48,7 +147,7 @@ export default function ChatInterface() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white">
+      <div className="flex h-full w-full items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
           <Sparkles className="animate-pulse text-blue-500" size={32} />
           <p className="text-zinc-500 font-medium">Loading conversations...</p>
@@ -58,14 +157,14 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-white text-[#1f1f1f] font-sans overflow-hidden selection:bg-blue-200">
+    <div className="flex h-full min-h-0 w-full bg-white text-[#1f1f1f] font-sans overflow-hidden selection:bg-blue-200">
 
       {/* Sidebar */}
       <div className="w-[280px] bg-[#f0f4f9] flex-col hidden md:flex transition-all duration-300">
         <div className="p-4 flex items-center gap-4">
-          <button className="p-2 hover:bg-[#e1e5ea] rounded-full transition-colors">
+          {/* <button className="p-2 hover:bg-[#e1e5ea] rounded-full transition-colors">
             <Menu size={20} className="text-[#444746]" />
-          </button>
+          </button> */}
         </div>
 
         <div className="px-4 py-2">
@@ -98,7 +197,7 @@ export default function ChatInterface() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative h-full w-full">
+      <div className="flex-1 flex flex-col relative h-full min-h-0 w-full">
 
         {/* Subtle background gradient for empty state */}
         {isChatEmpty && (
@@ -107,39 +206,66 @@ export default function ChatInterface() {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto z-10 w-full flex flex-col">
+        <div className="flex-1 min-h-0 overflow-y-auto z-10 w-full flex flex-col">
 
           {isChatEmpty ? (
             <div className="w-full h-full flex flex-col items-center justify-center mt-[-10vh]">
               <h1 className="text-[2.5rem] text-center font-normal text-[#1f1f1f] mb-8 tracking-tight">
-                Hi, let's get into it
+                Hi, let&apos;s get into it
               </h1>
             </div>
           ) : (
             <div className="w-full px-4 md:px-8 lg:px-12 py-6 space-y-8 pb-32">
-              {activeConversation?.messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex w-full ${msg.sender === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
-                >
+              {activeConversation?.messages.map((msg, index) => {
+                const nextMessage = activeConversation.messages[index + 1];
+                const nextMessageText = nextMessage?.text.toLowerCase() || '';
+                const canRegenerate =
+                  msg.sender === 'user' &&
+                  nextMessage?.sender === 'bot' &&
+                  (nextMessage.isFallback ||
+                    nextMessageText.includes('heavy traffic') ||
+                    nextMessageText.includes('temporarily unavailable'));
+
+                return (
                   <div
-                    className={`flex gap-4 max-w-[100%] ${msg.sender === 'user'
-                        ? 'bg-[#f0f4f9] px-5 py-3.5 rounded-3xl text-[15px] leading-relaxed text-[#1f1f1f]'
-                        : 'text-[15px] leading-relaxed text-[#1f1f1f]'
+                    key={msg.id}
+                    className={`flex w-full flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'
                       }`}
                   >
-                    {msg.sender !== 'user' && msg.id !== 'welcome' && (
-                      <div className="mt-1 flex-shrink-0">
-                        <Sparkles size={24} className="text-blue-500" />
+                    <div
+                      className={`flex gap-4 max-w-[100%] ${msg.sender === 'user'
+                          ? 'bg-[#f0f4f9] px-5 py-3.5 rounded-3xl text-[15px] leading-relaxed text-[#1f1f1f]'
+                          : 'text-[15px] leading-relaxed text-[#1f1f1f]'
+                        }`}
+                    >
+                      {msg.sender !== 'user' && msg.id !== 'welcome' && (
+                        <div className="mt-1 flex-shrink-0">
+                          <Sparkles size={24} className="text-blue-500" />
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-2 pt-0.5">
+                        {msg.sender === 'bot' ? (
+                          <BotMessage text={msg.text} />
+                        ) : (
+                          msg.text
+                        )}
                       </div>
-                    )}
-                    <div className="flex flex-col gap-2 pt-0.5">
-                      {msg.text}
                     </div>
+                    {canRegenerate && (
+                      <button
+                        type="button"
+                        onClick={() => regenerateMessage(msg.id)}
+                        disabled={isTyping}
+                        className="mt-2 mr-1 inline-flex h-8 items-center gap-1.5 rounded-full border border-[#d7dde5] bg-white px-3 text-xs font-medium text-[#444746] shadow-sm transition-colors hover:bg-[#f0f4f9] disabled:cursor-not-allowed disabled:opacity-50"
+                        title="Regenerate response"
+                      >
+                        <RotateCcw size={14} />
+                        Regenerate
+                      </button>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {isTyping && (
                 <div className="flex justify-start w-full">

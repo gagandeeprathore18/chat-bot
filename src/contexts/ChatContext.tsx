@@ -11,6 +11,7 @@ interface ChatContextType {
   setActiveChatId: (id: string | null) => void;
   createNewChat: () => Promise<void>;
   sendMessage: (text: string) => Promise<void>;
+  regenerateMessage: (userMessageId: string) => Promise<void>;
   isTyping: boolean;
   loading: boolean;
   activeConversation: conversation | undefined;
@@ -100,7 +101,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       );
 
       if (error) {
-        console.error('Error saving conversation:', {
+        console.log('Error saving conversation:', {
           code: error.code,
           message: error.message,
           details: error.details,
@@ -118,6 +119,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error('Unexpected error saving conversation:', err);
     }
+  };
+
+  const fetchBotResponse = async (text: string, history: message[]) => {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        history,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`API error: ${res.statusText}`);
+    }
+
+    return res.json();
   };
 
   const createNewChat = async () => {
@@ -175,6 +193,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // chat history to send to the backend for context (last 10 messages)
     const chathistory = activeConversation?.messages.slice(-10) || [];
 
     const userMsg: message = {
@@ -210,26 +229,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsTyping(true);
 
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text: text,
-          history: chathistory 
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`API error: ${res.statusText}`);
-      }
-
-      const data = await res.json();
+      const data = await fetchBotResponse(text, chathistory);
 
       const botMsg: message = {
         id: genId(),
         sender: 'bot',
         text: data.text || 'Sorry, I did not understand that.',
         timestamp: new Date().toISOString(),
+        isFallback: Boolean(data.isFallback),
+        source: data.source,
       };
 
       let savedChat: conversation | undefined;
@@ -261,18 +269,128 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         sender: 'bot',
         text: 'Something went wrong. Please try again.',
         timestamp: new Date().toISOString(),
+        isFallback: true,
+        source: 'client-error',
       };
+
+      let failedChat: conversation | undefined;
 
       setConversations((prev) =>
         prev.map((chat) => {
           if (chat.id !== activeChatId) return chat;
 
-          return {
+          const nextChat = {
             ...chat,
             messages: [...(chat.messages || []), errorMsg],
           };
+
+          failedChat = nextChat;
+          return nextChat;
         })
       );
+
+      if (failedChat) {
+        await saveConversation(failedChat);
+      }
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const regenerateMessage = async (userMessageId: string) => {
+    if (!activeChatId || isTyping) {
+      return;
+    }
+
+    const chat = conversations.find((item) => item.id === activeChatId);
+    const messages = chat?.messages || [];
+    const userMessageIndex = messages.findIndex(
+      (msg) => msg.id === userMessageId && msg.sender === 'user'
+    );
+
+    if (!chat || userMessageIndex === -1) {
+      return;
+    }
+
+    const userMessage = messages[userMessageIndex];
+    const nextMessage = messages[userMessageIndex + 1];
+    const shouldRemoveFallback =
+      nextMessage?.sender === 'bot' &&
+      (nextMessage.isFallback ||
+        nextMessage.text.toLowerCase().includes('heavy traffic') ||
+        nextMessage.text.toLowerCase().includes('temporarily unavailable'));
+
+    const messagesWithoutFallback = shouldRemoveFallback
+      ? messages.filter((_, index) => index !== userMessageIndex + 1)
+      : messages;
+
+    const history = messages.slice(0, userMessageIndex).slice(-10);
+    const chatWithoutFallback = {
+      ...chat,
+      messages: messagesWithoutFallback,
+    };
+
+    setConversations((prev) =>
+      prev.map((item) =>
+        item.id === activeChatId ? chatWithoutFallback : item
+      )
+    );
+    await saveConversation(chatWithoutFallback);
+
+    setIsTyping(true);
+
+    try {
+      const data = await fetchBotResponse(userMessage.text, history);
+
+      const botMsg: message = {
+        id: genId(),
+        sender: 'bot',
+        text: data.text || 'Sorry, I did not understand that.',
+        timestamp: new Date().toISOString(),
+        isFallback: Boolean(data.isFallback),
+        source: data.source,
+      };
+
+      const refreshedMessages = [...chatWithoutFallback.messages];
+      refreshedMessages.splice(userMessageIndex + 1, 0, botMsg);
+
+      const refreshedChat = {
+        ...chatWithoutFallback,
+        messages: refreshedMessages,
+      };
+
+      setConversations((prev) =>
+        prev.map((item) =>
+          item.id === activeChatId ? refreshedChat : item
+        )
+      );
+      await saveConversation(refreshedChat);
+    } catch (error) {
+      console.error('Error regenerating message:', error);
+
+      const errorMsg: message = {
+        id: genId(),
+        sender: 'bot',
+        text: 'Something went wrong. Please try again.',
+        timestamp: new Date().toISOString(),
+        isFallback: true,
+        source: 'client-error',
+      };
+
+      const failedMessages = [...chatWithoutFallback.messages];
+      failedMessages.splice(userMessageIndex + 1, 0, errorMsg);
+
+      const failedChat = {
+        ...chatWithoutFallback,
+        messages: failedMessages,
+      };
+
+      setConversations((prev) =>
+        prev.map((item) =>
+          item.id === activeChatId ? failedChat : item
+        )
+      );
+      await saveConversation(failedChat);
     } finally {
       setIsTyping(false);
     }
@@ -286,6 +404,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setActiveChatId,
         createNewChat,
         sendMessage,
+        regenerateMessage,
         isTyping,
         loading,
         activeConversation,

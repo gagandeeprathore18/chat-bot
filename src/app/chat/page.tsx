@@ -30,13 +30,13 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-zinc-50/40 dark:bg-zinc-950/80 transition-colors duration-300">
+    <div className="h-screen flex flex-col overflow-hidden bg-zinc-50/40 dark:bg-zinc-950/80 transition-colors duration-300">
 
       {/* Background Decorative Gradients */}
       <div className="absolute top-0 left-0 right-0 h-[450px] bg-gradient-to-b from-sky-500/5 via-transparent to-transparent pointer-events-none -z-10" />
 
       {/* Mini Header */}
-      <header className="w-full px-4 md:px-6 py-4 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/30">
+      <header className="w-full shrink-0 px-4 md:px-6 py-4 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/30">
 
         {/* Left Side */}
         <Link
@@ -67,12 +67,12 @@ export default function ChatPage() {
       </header>
 
       {/* Main Chat Frame */}
-      <main className="flex-1 w-full px-4 md:px-6 py-6 flex items-stretch justify-start">
+      <main className="flex-1 min-h-0 w-full flex items-stretch justify-start">
         <ChatInterface />
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-zinc-200/50 dark:border-zinc-800/30 py-4">
+      <footer className="w-full shrink-0 border-t border-zinc-200/50 dark:border-zinc-800/30 py-4">
         <div className="w-full px-0 flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
           <p className="px-4">© {new Date().getFullYear()} ChatBot.</p>
         </div>
