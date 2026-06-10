@@ -60,7 +60,7 @@ export default function ChatPage() {
             </button>
           )}
 
-          <ThemeToggle />
+          {/* <ThemeToggle /> */}
 
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState, ReactNode } from 'react';
+import { useEffect, useRef, useState, ReactNode } from 'react';
 import {
   Plus,
   ArrowUp,
@@ -127,7 +127,7 @@ export default function ChatInterface() {
   } = useChat();
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [inputValue, setInputValue] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Auto scroll
@@ -139,12 +139,10 @@ export default function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const text = inputRef.current?.value || '';
-    if (text.trim()) {
+    const text = inputValue.trim();
+    if (text) {
+      setInputValue('');
       await sendMessage(text);
-      if (inputRef.current) {
-        inputRef.current.value = '';
-      }
     }
   };
 
@@ -325,7 +323,8 @@ export default function ChatInterface() {
             </button> */}
 
             <input
-              ref={inputRef}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               type="text"
               placeholder={isChatEmpty ? "Enter a prompt here" : "Type your message..."}
               className="flex-1 bg-transparent text-[15px] focus:outline-none placeholder-gray-500 text-[#1f1f1f]"

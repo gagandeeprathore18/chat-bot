@@ -39,9 +39,16 @@ const createDraftChat = (): conversation => ({
       timestamp: new Date().toISOString(),
     },
   ],
-  // ⭐ ROLLING SUMMARY CHANGE: Initialize empty summary for new chats
+  // ROLLING SUMMARY CHANGE: Initialize empty summary for new chats
   summary: "", 
 });
+
+type BotStreamResult = {
+  text: string;
+  summary?: string;
+  source?: string;
+  isFallback?: boolean;
+};
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const { user, session } = useAuth();
@@ -64,7 +71,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
       setLoading(true);
 
-      // ⭐ ROLLING SUMMARY CHANGE: Select 'summary' column from database
+      // ROLLING SUMMARY CHANGE: Select 'summary' column from database
       const { data, error } = await supabase
         .from('conversations')
         .select('id, title, created_at, messages, summary')
@@ -83,7 +90,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           title: row.title || 'New Chat',
           createdAt: row.created_at,
           messages: Array.isArray(row.messages) ? row.messages : [],
-          // ⭐ ROLLING SUMMARY CHANGE: Load the existing summary from DB
+          // ROLLING SUMMARY CHANGE: Load the existing summary from DB
           summary: row.summary || "", 
         })).filter(hasUserConversation);
 
@@ -113,7 +120,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     if (!hasUserConversation(chat)) return;
 
     try {
-      // ⭐ ROLLING SUMMARY CHANGE: Include 'summary' in the database payload
+      // ROLLING SUMMARY CHANGE: Include 'summary' in the database payload
       const payload = {
         id: chat.id,
         user_id: user.id,
@@ -131,8 +138,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // ⭐ ROLLING SUMMARY CHANGE: Function now accepts and passes the summary
-  const fetchBotResponse = async (text: string, history: message[], summary: string) => {
+  // Streams API chunks from /api/chat and reports each text delta to the caller.
+  const fetchBotResponse = async (
+    text: string,
+    history: message[],
+    summary: string,
+    onChunk: (chunk: string) => void
+  ): Promise<BotStreamResult> => {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -140,7 +152,54 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     });
 
     if (!res.ok) throw new Error(`API error: ${res.statusText}`);
-    return res.json();
+    if (!res.body) throw new Error('API response did not include a stream');
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let finalResult: BotStreamResult = {
+      text: '',
+      summary,
+      source: 'gemini',
+    };
+
+    const handleLine = (line: string) => {
+      if (!line.trim()) return;
+
+      const event = JSON.parse(line);
+
+      if (event.type === 'chunk') {
+        onChunk(event.text || '');
+        finalResult.text += event.text || '';
+        return;
+      }
+
+      if (event.type === 'done') {
+        finalResult = {
+          text: event.text || finalResult.text,
+          summary: event.summary || summary,
+          source: event.source,
+          isFallback: Boolean(event.isFallback),
+        };
+      }
+    };
+
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      lines.forEach(handleLine);
+
+      if (done) break;
+    }
+
+    if (buffer.trim()) {
+      handleLine(buffer);
+    }
+
+    return finalResult;
   };
 
   const createNewChat = async () => {
@@ -157,7 +216,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const sendMessage = async (text: string) => {
     if (!text.trim() || !activeChatId || !activeConversation) return;
 
-    // ⭐ ROLLING SUMMARY CHANGE: Extract existing summary to pass to the API
+    // ROLLING SUMMARY CHANGE: Extract existing summary to pass to the API
     const chathistory = activeConversation.messages.slice(-10);
     const currentSummary = activeConversation.summary || "";
 
@@ -179,22 +238,51 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setIsTyping(true);
 
     try {
-      // ⭐ ROLLING SUMMARY CHANGE: Send summary to the API
-      const data = await fetchBotResponse(text, chathistory, currentSummary);
-
-      const botMsg: message = {
+      const streamingBotMsg: message = {
         id: genId(),
         sender: 'bot',
-        text: data.text || 'Sorry, I did not understand that.',
+        text: '',
         timestamp: new Date().toISOString(),
-        isFallback: Boolean(data.isFallback),
-        source: data.source,
+        source: 'gemini',
       };
 
-      // ⭐ ROLLING SUMMARY CHANGE: Capture new summary if the API returns one
-      const finalChatState: conversation = {
+      const chatWithStreamingMessage: conversation = {
         ...optimisticChat,
-        messages: [...optimisticChat.messages, botMsg],
+        messages: [...optimisticChat.messages, streamingBotMsg],
+      };
+
+      setConversations((prev) => prev.map((chat) => (chat.id === activeChatId ? chatWithStreamingMessage : chat)));
+
+      // Stream Gemini chunks into the placeholder bot message as soon as they arrive.
+      const data = await fetchBotResponse(text, chathistory, currentSummary, (chunk) => {
+        setConversations((prev) =>
+          prev.map((chat) => {
+            if (chat.id !== activeChatId) return chat;
+
+            return {
+              ...chat,
+              messages: chat.messages.map((msg) =>
+                msg.id === streamingBotMsg.id
+                  ? { ...msg, text: `${msg.text}${chunk}` }
+                  : msg
+              ),
+            };
+          })
+        );
+      });
+
+      const finalChatState: conversation = {
+        ...chatWithStreamingMessage,
+        messages: chatWithStreamingMessage.messages.map((msg) =>
+          msg.id === streamingBotMsg.id
+            ? {
+                ...msg,
+                text: data.text || 'Sorry, I did not understand that.',
+                isFallback: Boolean(data.isFallback),
+                source: data.source,
+              }
+            : msg
+        ),
         summary: data.summary || currentSummary, 
       };
 
@@ -224,25 +312,53 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     setIsTyping(true);
     try {
-      // ⭐ ROLLING SUMMARY CHANGE: Send summary to API
-      const data = await fetchBotResponse(messages[userMessageIndex].text, history, currentSummary);
-
-      const botMsg: message = {
+      const streamingBotMsg: message = {
         id: genId(),
         sender: 'bot',
-        text: data.text,
+        text: '',
         timestamp: new Date().toISOString(),
-        isFallback: Boolean(data.isFallback),
-        source: data.source,
+        source: 'gemini',
       };
 
       const refreshedMessages = [...chatWithoutFallback.messages];
-      refreshedMessages.splice(userMessageIndex + 1, 0, botMsg);
+      refreshedMessages.splice(userMessageIndex + 1, 0, streamingBotMsg);
 
-      // ⭐ ROLLING SUMMARY CHANGE: Capture new summary from regeneration
-      const refreshedChat: conversation = {
+      const streamingChat: conversation = {
         ...chatWithoutFallback,
         messages: refreshedMessages,
+      };
+
+      setConversations((prev) => prev.map((item) => (item.id === activeChatId ? streamingChat : item)));
+
+      const data = await fetchBotResponse(messages[userMessageIndex].text, history, currentSummary, (chunk) => {
+        setConversations((prev) =>
+          prev.map((chat) => {
+            if (chat.id !== activeChatId) return chat;
+
+            return {
+              ...chat,
+              messages: chat.messages.map((msg) =>
+                msg.id === streamingBotMsg.id
+                  ? { ...msg, text: `${msg.text}${chunk}` }
+                  : msg
+              ),
+            };
+          })
+        );
+      });
+
+      const refreshedChat: conversation = {
+        ...streamingChat,
+        messages: streamingChat.messages.map((msg) =>
+          msg.id === streamingBotMsg.id
+            ? {
+                ...msg,
+                text: data.text || 'Sorry, I did not understand that.',
+                isFallback: Boolean(data.isFallback),
+                source: data.source,
+              }
+            : msg
+        ),
         summary: data.summary || currentSummary,
       };
 

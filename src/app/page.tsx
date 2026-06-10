@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ThemeToggle from '../components/ThemeToggle';
 import AuthModal from '../components/AuthModal';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { 
-  Search, MessageSquare, Layers, Terminal, 
-  ChevronRight, Settings, CreditCard, ShieldAlert 
+  MessageSquare, Terminal, ChevronRight 
 } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
+  const { session, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -44,16 +45,25 @@ export default function Home() {
 
       {/* Main Navigation Header */}
       <header className="w-full px-6 py-5 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/30">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div> 
             <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">ChatBot</span>
             <span className="text-zinc-400 dark:text-zinc-500 text-xs block -mt-0.5">Developer Support Hub</span>
           </div>
+          {session ? (
+            <button
+              type="button"
+              onClick={signOut}
+              className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 absolute right-2"
+            >
+              Sign out
+            </button>
+          ) : null}
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <ThemeToggle />
-        </div>
+        </div> */}
       </header>
 
       {/* Hero Header & Help Portal Search */}
@@ -126,11 +136,11 @@ export default function Home() {
       <footer className="w-full border-t border-zinc-200/50 dark:border-zinc-800/30 py-6 mt-12">
         <div className="w-full px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-400 dark:text-zinc-500">
           <p>© {new Date().getFullYear()} ChatBot for Developers.</p>
-          <div className="flex items-center gap-6 font-medium">
+          {/* <div className="flex items-center gap-6 font-medium">
             <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">Developer Docs</a>
             <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">API Reference</a>
             <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">Status Page</a>
-          </div>
+          </div> */}
         </div>
       </footer>
     </div>
