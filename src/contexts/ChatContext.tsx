@@ -304,7 +304,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const userMessageIndex = messages.findIndex((msg) => msg.id === userMessageId && msg.sender === 'user');
     if (userMessageIndex === -1) return;
 
-    // ⭐ ROLLING SUMMARY CHANGE: Extract history and summary
+    // ROLLING SUMMARY CHANGE: Extract history and summary
     const history = messages.slice(0, userMessageIndex).slice(-10);
     const currentSummary = activeConversation.summary || "";
 

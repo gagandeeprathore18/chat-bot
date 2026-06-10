@@ -227,34 +227,33 @@ export default function ChatInterface() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative h-full min-h-0 w-full comic-grid-bg">
 
+        {/* Sidebar expand toggle, rendered only when collapsed, floating outside the navbar */}
+        {isSidebarCollapsed && (
+          <div className="absolute top-[80px] left-4 z-30 h-9 w-9 flex items-center justify-center animate-button-bounce">
+            {/* Blue gradient shade behind the button */}
+            <div className="absolute inset-[-6px] rounded-full bg-gradient-to-br from-sky-blue to-powder-blue opacity-75 blur-sm" />
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(false)}
+              aria-label="Expand sidebar"
+              title="Expand sidebar"
+              className="relative z-10 h-full w-full flex items-center justify-center rounded-full border border-border-comic bg-cream text-ink shadow-sm hover:scale-[1.05] active:scale-95 cursor-pointer"
+            >
+              <PanelLeftOpen size={18} strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
+
         {/* Header/Navbar: Capsule shape restored, kept as static sibling to prevent overflow */}
         <header className="mx-auto mt-4 mb-2 w-[95%] max-w-5xl rounded-full border border-border-comic bg-cream px-6 py-3 flex items-center justify-between shadow-sm relative z-30 shrink-0">
           {/* Left Side */}
-          <div className="flex items-center gap-4">
-            {isSidebarCollapsed && (
-              <div className="relative h-8 w-8 flex items-center justify-center animate-button-bounce">
-                {/* Blue gradient shade behind the button */}
-                <div className="absolute inset-[-6px] rounded-full bg-gradient-to-br from-sky-blue to-powder-blue opacity-75 blur-sm" />
-                <button
-                  type="button"
-                  onClick={() => setIsSidebarCollapsed(false)}
-                  aria-label="Expand sidebar"
-                  title="Expand sidebar"
-                  className="relative z-10 h-full w-full flex items-center justify-center rounded-full border border-border-comic bg-cream text-ink shadow-sm hover:scale-[1.05] active:scale-95 cursor-pointer"
-                >
-                  <PanelLeftOpen size={16} strokeWidth={1.8} />
-                </button>
-              </div>
-            )}
-            
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-s font-bold text-ink-light hover:text-ink transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back</span>
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 text-s font-bold text-ink-light hover:text-ink transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </Link>
 
           {/* Center: Title */}
           <div className="text-xl font-bold text-ink uppercase tracking-wider">
@@ -289,7 +288,7 @@ export default function ChatInterface() {
               </h1>
             </div>
           ) : (
-            <div className="w-full pt-4 pb-8 space-y-8 px-4 md:px-8 lg:px-12 transition-all">
+            <div className={`w-full pt-4 pb-8 space-y-8 pr-4 md:pr-8 lg:pr-12 transition-all ${isSidebarCollapsed ? 'pl-16 md:pl-20' : 'pl-4 md:pl-8 lg:pl-12'}`}>
               {activeConversation?.messages.map((msg, index) => {
                 const nextMessage = activeConversation.messages[index + 1];
                 const nextMessageText = nextMessage?.text.toLowerCase() || '';
