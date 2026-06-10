@@ -1,32 +1,66 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
-  --foreground: #09090b;
+  --background: #FFFDF7; /* cream */
+  --foreground: #2C2B29; /* soft ink */
+  --font-sans: var(--font-comic-neue), "Comic Sans MS", "Comic Neue", var(--font-nunito), sans-serif;
+  --border-comic: #CDD5E0;
+  
+  --bg-beige: #F7F3E9;
+  --bg-cream: #FFFDF7;
+  --bg-pastel-blue: #DCEEFF;
+  --bg-powder-blue: #CFE5FF;
+  --bg-pastel-beige: #F3E8D9;
+  --bg-pale-gray: #EAEAEA;
+  --bg-sky-blue: #A7C7E7;
+  
+  --shadow-comic-btn: 1.5px 1.5px 0px 0px rgba(44, 43, 41, 0.15);
+  --shadow-comic-card: 2px 2px 0px 0px rgba(44, 43, 41, 0.1);
+}
+
+.dark {
+  --background: #F3E8D9; /* slightly warmer paper beige */
+  --foreground: #2C2B29; /* remains readable soft ink */
+  --border-comic: #BCAE9B;
+  
+  --bg-beige: #EAE0D0;
+  --bg-cream: #F3E8D9;
+  --bg-pastel-blue: #CFE5FF; /* slightly richer pastel blue */
+  --bg-powder-blue: #A7C7E7;
+  --bg-pastel-beige: #E5D5C0;
+  --bg-pale-gray: #DCD0C0;
+  --bg-sky-blue: #96BBE0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-.dark {
-  --background: #030712;
-  --foreground: #f3f4f6;
+  
+  --color-beige: var(--bg-beige);
+  --color-cream: var(--bg-cream);
+  --color-pastel-blue: var(--bg-pastel-blue);
+  --color-powder-blue: var(--bg-powder-blue);
+  --color-pastel-beige: var(--bg-pastel-beige);
+  --color-pale-gray: var(--bg-pale-gray);
+  --color-sky-blue: var(--bg-sky-blue);
+  
+  --color-ink: #2C2B29;
+  --color-ink-light: #6A6864;
+  --color-border-comic: var(--border-comic);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
 }
 
-/* Smooth transitions for theme toggle */
+/* Smooth transitions */
 * {
-  transition-property: background-color, border-color, text-decoration-color, fill, stroke;
+  transition-property: background-color, border-color, text-decoration-color, fill, stroke, transform, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
 }
@@ -38,29 +72,23 @@ body {
 
 /* Scrollbar styles */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--bg-beige);
+  border-left: 1px solid var(--border-comic);
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.25);
-  border-radius: 99px;
+  background: var(--border-comic);
+  border-radius: 4px;
+  border: 2px solid var(--bg-beige);
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.45);
-}
-
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(75, 85, 99, 0.3);
-}
-
-.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: rgba(75, 85, 99, 0.55);
+  background: var(--color-ink-light);
 }
 
 /* Pulse animation adjustments */
@@ -83,8 +111,53 @@ body {
   }
 }
 
-/* Glassmorphism styling utility classes */
-.glass-effect {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Floating bob animation for chatbot card */
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+.animate-bob {
+  animation: bob 4s ease-in-out infinite;
+}
+
+/* Comic paper grid background class */
+.comic-grid-bg {
+  background-color: var(--background);
+  background-image: 
+    linear-gradient(rgba(167, 199, 231, 0.08) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(167, 199, 231, 0.08) 1.5px, transparent 1.5px),
+    linear-gradient(rgba(247, 243, 233, 0.5), rgba(247, 243, 233, 0.5));
+  background-size: 32px 32px, 32px 32px, auto;
+}
+
+/* Comic style borders and shadows */
+.comic-border {
+  border: 1.5px solid var(--border-comic);
+}
+
+.comic-shadow-sm {
+  box-shadow: var(--shadow-comic-btn);
+}
+
+.comic-shadow-md {
+  box-shadow: var(--shadow-comic-card);
+}
+
+/* Bouncing button animation */
+@keyframes button-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.animate-button-bounce {
+  animation: button-bounce 2s ease-in-out infinite;
 }

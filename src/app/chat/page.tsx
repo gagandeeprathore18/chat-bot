@@ -30,53 +30,15 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-zinc-50/40 dark:bg-zinc-950/80 transition-colors duration-300">
+    <div className="relative h-screen w-screen overflow-hidden bg-cream text-ink">
 
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-0 left-0 right-0 h-[450px] bg-gradient-to-b from-sky-500/5 via-transparent to-transparent pointer-events-none -z-10" />
+      {/* Background Decorative Accent */}
+      <div className="absolute top-0 left-0 right-0 h-[450px] bg-gradient-to-b from-powder-blue/10 via-transparent to-transparent pointer-events-none -z-10" />
 
-      {/* Mini Header */}
-      <header className="w-full shrink-0 px-4 md:px-6 py-4 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/30">
-
-        {/* Left Side */}
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 text-s font-semibold text-zinc-650 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Home</span>
-        </Link>
-
-        {/* Right Side */}
-        <div className="flex items-center gap-4">
-
-          {session && (
-            <button
-              type="button"
-              onClick={signOut}
-              className="text-s font-semibold px-3 py-1 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-200 dark:text-zinc-950 dark:hover:bg-zinc-100 transition-all"
-            >
-              Sign out
-            </button>
-          )}
-
-          {/* <ThemeToggle /> */}
-
-        </div>
-
-      </header>
-
-      {/* Main Chat Frame */}
-      <main className="flex-1 min-h-0 w-full flex items-stretch justify-start">
+      {/* Main Chat Frame - stretches full height */}
+      <main className="h-full w-full flex items-stretch justify-start">
         <ChatInterface />
       </main>
-
-      {/* Footer */}
-      <footer className="w-full shrink-0 border-t border-zinc-200/50 dark:border-zinc-800/30 py-4">
-        <div className="w-full px-0 flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
-          <p className="px-4">© {new Date().getFullYear()} ChatBot.</p>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -36,68 +36,93 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-zinc-50/40 dark:bg-zinc-950/80 transition-colors duration-300">
+    <div className="min-h-screen flex flex-col justify-between comic-grid-bg transition-colors duration-300 text-ink">
       
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-0 left-0 right-0 h-[450px] bg-gradient-to-b from-sky-500/5 via-transparent to-transparent pointer-events-none -z-10" />
-      <div className="absolute top-1/4 right-[10%] w-[350px] h-[350px] rounded-full bg-indigo-500/5 blur-[120px] pointer-events-none -z-10 dark:bg-indigo-400/5" />
-      <div className="absolute bottom-1/4 left-[5%] w-[400px] h-[400px] rounded-full bg-sky-500/5 blur-[130px] pointer-events-none -z-10 dark:bg-sky-400/3" />
+      {/* Background Decorative Accent */}
+      <div className="absolute top-1/4 right-[10%] w-[350px] h-[350px] rounded-full bg-powder-blue/20 blur-[100px] pointer-events-none -z-10" />
+      <div className="absolute bottom-1/4 left-[5%] w-[400px] h-[400px] rounded-full bg-sky-blue/15 blur-[110px] pointer-events-none -z-10" />
 
       {/* Main Navigation Header */}
-      <header className="w-full px-6 py-5 flex items-center justify-between border-b border-zinc-200/50 dark:border-zinc-800/30">
-        <div className="flex items-center gap-4">
-          <div> 
-            <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">ChatBot</span>
-            <span className="text-zinc-400 dark:text-zinc-500 text-xs block -mt-0.5">Developer Support Hub</span>
-          </div>
+      <header className="sticky top-3 mx-auto mt-4 mb-2 w-[95%] max-w-7xl rounded-full border border-border-comic bg-cream px-10 py-3.5 flex items-center justify-between shadow-sm z-50">
+        <div> 
+          <span className="font-bold text-2xl tracking-tight text-ink uppercase block leading-none">Nomi</span>
+          <span className="text-ink-light text-[12px] block flex justify-center mt-0.5 font-semibold">AI ChatBot</span>
+        </div>
+
+        {/* Right Side Action Button */}
+        <div className="flex items-center">
           {session ? (
             <button
               type="button"
               onClick={signOut}
-              className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 absolute right-2"
+              className="rounded-full border border-border-comic bg-[#2E4A62] hover:bg-[#1E3A52] px-4 py-2 text-xs font-bold text-white transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
             >
               Sign out
             </button>
-          ) : null}
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAuthOpen(true)}
+              className="rounded-full border border-border-comic bg-[#2E4A62] hover:bg-[#1E3A52] px-4 py-2 text-xs font-bold text-white transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Sign in
+            </button>
+          )}
         </div>
-
-        {/* <div className="flex items-center gap-4">
-          <ThemeToggle />
-        </div> */}
       </header>
 
       {/* Hero Header & Help Portal Search */}
-      <main className="flex-1 w-full px-6 py-10 md:py-16 flex flex-col items-center gap-10 justify-center">
+      <main className="flex-1 w-full px-6 pt-6 pb-10 md:pt-8 md:pb-16 flex flex-col items-center gap-15 justify-center">
         
-        {/* Hero Copy */}
-        <div className="text-center space-y-4 max-w-2xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 dark:bg-sky-400/10 text-[11px] font-bold text-sky-600 dark:text-sky-400 border border-sky-500/25 dark:border-sky-400/20 uppercase tracking-wider">
-            <Terminal className="w-3.5 h-3.5" />
-            <span>Developer Support Hub</span>
+        {/* Hero Copy Split Section */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center w-full max-w-4xl px-4">
+          
+          {/* Left Column: Heading and copy */}
+          <div className="md:col-span-7 text-left space-y-5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pastel-blue text-[#041e49] border border-border-comic text-[11px] font-bold uppercase tracking-wider">
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Your second brain online</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight text-ink leading-[0.97]">
+              How can I help you today?
+            </h1>
+            <p className="text-sm md:text-base text-ink-light leading-relaxed font-bold">
+              Search our dynamic knowledge base or start a live chatbot session for immediate technical support.
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-            How can we help you today?
-          </h1>
-          <p className="text-sm md:text-base text-zinc-500 dark:text-zinc-405 leading-relaxed">
-            Search our dynamic knowledge base or start a live chatbot session for immediate technical support.
-          </p>
+
+          {/* Right Column: Floating Chatbot Illustration & Speech Bubble */}
+          <div className="md:col-span-5 flex justify-center md:justify-end">
+            <div className="relative animate-bob max-w-[320px] md:max-w-[420px]">
+              <img
+                src="/chatbot_illustration.png"
+                alt="Nomi Chatbot"
+                className="w-full object-cover hover:scale-[1.02] transition-transform duration-300"
+              />
+              {/* Comic Speech Bubble */}
+              <div className="absolute bottom-[25px] right-[-15px] bg-[#FFFDF7] px-4 py-2 rounded-2xl border border-border-comic text-xs font-bold text-ink shadow-sm rotate-[5deg] whitespace-nowrap">
+                "Beep Boop! I'm here!"
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Action Panel: Launch Chat */}
-        <div className="w-full max-w-4xl p-6 md:p-8 rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-500/5 to-sky-500/5 dark:from-sky-500/10 dark:to-sky-500/10 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
+        <div className="w-full max-w-4xl p-6 md:p-8 rounded-2xl border border-border-comic bg-cream flex flex-col md:flex-row items-center justify-between gap-6 shadow-md hover:scale-[1.005] transition-all">
           <div className="space-y-1.5 text-center md:text-left">
-            <h2 className="font-extrabold text-lg md:text-xl text-zinc-850 dark:text-white flex items-center justify-center md:justify-start gap-2">
-              <MessageSquare className="w-5 h-5 text-sky-500 animate-pulse" />
+            <h2 className="font-bold text-lg md:text-xl text-ink flex items-center justify-center md:justify-start gap-2">
+              <MessageSquare className="w-5 h-5 text-sky-blue" />
               <span>Need Immediate support?</span>
             </h2>
-            <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            <p className="text-xs md:text-sm text-ink-light leading-relaxed font-medium">
               Launch our interactive support chat assistant to resolve issues, get codes, and query details instantly.
             </p>
           </div>
           <button
             type="button"
             onClick={handleLaunchSupport}
-            className="w-full md:w-auto px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 dark:bg-sky-500 dark:hover:bg-sky-400 text-white dark:text-zinc-950 font-bold text-sm text-center shadow-md shadow-sky-500/10 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full md:w-auto px-6 py-3 rounded-xl bg-pastel-blue hover:bg-sky-blue text-ink border border-border-comic font-bold text-sm text-center shadow-sm hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <span>Launch Live Support Chat</span>
             <ChevronRight className="w-4 h-4" />
@@ -106,18 +131,18 @@ export default function Home() {
 
         {/* Browse All FAQs Panel (replaces categories) */}
         <div className="w-full max-w-4xl">
-          <h3 className="font-bold text-sm text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Browse All FAQs</h3>
+          <h3 className="font-bold text-sm text-ink-light uppercase tracking-wider">Browse All FAQs</h3>
 
-          <div className="mt-4 p-6 rounded-2xl border bg-white/40 dark:bg-zinc-900/20 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="mt-4 p-6 rounded-2xl border border-border-comic bg-cream flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm hover:scale-[1.005] transition-all">
             <div>
-              <h4 className="text-lg font-semibold text-zinc-900 dark:text-white">Explore our full knowledge base</h4>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Find answers to common developer questions, troubleshooting steps, and API guidance in one place.</p>
+              <h4 className="text-lg font-bold text-ink">Explore our full knowledge base</h4>
+              <p className="text-sm text-ink-light mt-2 font-medium">Find answers to common developer questions, troubleshooting steps, and API guidance in one place.</p>
             </div>
 
             <div className="flex-shrink-0">
               <Link
                 href="/faq"
-                className="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold shadow-md"
+                className="px-5 py-3 rounded-xl bg-pastel-blue hover:bg-sky-blue text-ink border border-border-comic font-bold shadow-sm hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98] transition-all"
               >
                 Browse All FAQs
               </Link>
@@ -133,14 +158,9 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-zinc-200/50 dark:border-zinc-800/30 py-6 mt-12">
-        <div className="w-full px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-400 dark:text-zinc-500">
-          <p>© {new Date().getFullYear()} ChatBot for Developers.</p>
-          {/* <div className="flex items-center gap-6 font-medium">
-            <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">Developer Docs</a>
-            <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">API Reference</a>
-            <a href="#" className="hover:text-zinc-700 dark:hover:text-zinc-350 transition-colors">Status Page</a>
-          </div> */}
+      <footer className="w-full border-t border-border-comic bg-cream py-6 mt-12">
+        <div className="w-full px-6 flex flex-col md:flex-row items-center justify-center gap-4 text-s text-ink-light font-medium">
+          <p>© {new Date().getFullYear()} Your Internet Sidekick.</p>
         </div>
       </footer>
     </div>

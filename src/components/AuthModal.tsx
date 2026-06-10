@@ -113,26 +113,26 @@ export default function AuthModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[1px] px-4 py-6"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-3xl bg-white dark:bg-[#08101f] border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-2xl"
+        className="w-full max-w-md rounded-3xl bg-cream border border-border-comic p-6 shadow-md"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-4 mb-6">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-sky-600 dark:text-sky-400 font-semibold">
+            <p className="text-sm uppercase tracking-[0.2em] text-sky-blue font-bold">
               {mode === "login" ? "Sign in" : "Sign up"}
             </p>
-            <h2 className="text-2xl font-bold text-zinc-950 dark:text-white">
+            <h2 className="text-2xl font-bold text-ink">
               {mode === "login" ? "Access Live Support" : "Create an account"}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition"
+            className="text-ink-light hover:text-ink transition font-bold text-2xl cursor-pointer"
           >
             ×
           </button>
@@ -142,10 +142,10 @@ export default function AuthModal({
           <button
             type="button"
             onClick={() => setMode("login")}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
+            className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition border cursor-pointer ${
               mode === "login"
-                ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
-                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                ? "bg-powder-blue text-ink border-border-comic shadow-sm"
+                : "bg-beige text-ink-light border-transparent hover:bg-powder-blue/40 hover:text-ink"
             }`}
           >
             Sign in
@@ -153,10 +153,10 @@ export default function AuthModal({
           <button
             type="button"
             onClick={() => setMode("signup")}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-semibold transition ${
+            className={`flex-1 rounded-full px-4 py-2 text-sm font-bold transition border cursor-pointer ${
               mode === "signup"
-                ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950"
-                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+                ? "bg-powder-blue text-ink border-border-comic shadow-sm"
+                : "bg-beige text-ink-light border-transparent hover:bg-powder-blue/40 hover:text-ink"
             }`}
           >
             Sign up
@@ -165,46 +165,46 @@ export default function AuthModal({
 
         <form onSubmit={submit} className="space-y-4">
           {mode === "signup" && (
-            <label className="block text-sm text-zinc-700 dark:text-zinc-200">
-              <span className="mb-2 block">Full name</span>
+            <label className="block text-sm text-ink">
+              <span className="mb-2 block font-semibold">Full name</span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+                className="w-full rounded-2xl border border-border-comic bg-cream px-4 py-3 text-sm text-ink outline-none transition focus:border-sky-blue focus:ring-1 focus:ring-sky-blue"
                 placeholder="Jane Doe"
               />
             </label>
           )}
 
-          <label className="block text-sm text-zinc-700 dark:text-zinc-200">
-            <span className="mb-2 block">Email</span>
+          <label className="block text-sm text-ink">
+            <span className="mb-2 block font-semibold">Email</span>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-border-comic bg-cream px-4 py-3 text-sm text-ink outline-none transition focus:border-sky-blue focus:ring-1 focus:ring-sky-blue"
               placeholder="you@example.com"
             />
           </label>
 
-          <label className="block text-sm text-zinc-700 dark:text-zinc-200">
-            <span className="mb-2 block">Password</span>
+          <label className="block text-sm text-ink">
+            <span className="mb-2 block font-semibold">Password</span>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-2xl border border-zinc-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-sky-500"
+              className="w-full rounded-2xl border border-border-comic bg-cream px-4 py-3 text-sm text-ink outline-none transition focus:border-sky-blue focus:ring-1 focus:ring-sky-blue"
               placeholder="Enter password"
             />
           </label>
 
           {error && (
-            <p className="text-sm text-rose-600 dark:text-rose-400">{error}</p>
+            <p className="text-sm text-rose-600 font-semibold">{error}</p>
           )}
 
           <button
             type="submit"
-            className="w-full rounded-2xl bg-sky-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-70"
+            className="w-full rounded-2xl bg-pastel-blue border border-border-comic px-4 py-3 text-sm font-bold text-ink shadow-sm transition hover:bg-sky-blue hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 cursor-pointer"
             disabled={loading}
           >
             {loading ? "Working…" : mode === "login" ? "Sign in" : "Create account"}

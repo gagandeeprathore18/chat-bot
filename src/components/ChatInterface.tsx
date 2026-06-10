@@ -7,9 +7,14 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   RotateCcw,
-  Sparkles
+  Bot,
+  Paperclip,
+  Send,
+  ArrowLeft
 } from 'lucide-react';
 import { useChat } from '@/contexts/ChatContext';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Normalizes common Gemini markdown quirks before rendering.
 function formatBotText(text: string) {
@@ -37,7 +42,7 @@ function renderInlineMarkdown(text: string) {
       return (
         <code
           key={index}
-          className="rounded bg-[#eef2f7] px-1.5 py-0.5 font-mono text-[0.92em]"
+          className="rounded bg-beige px-1.5 py-0.5 border border-border-comic font-mono text-[0.92em] text-ink"
         >
           {part.slice(1, -1)}
         </code>
@@ -126,6 +131,8 @@ export default function ChatInterface() {
     activeConversation,
   } = useChat();
 
+  const { signOut } = useAuth();
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -150,47 +157,47 @@ export default function ChatInterface() {
 
   if (loading) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-white">
+      <div className="flex h-full w-full items-center justify-center bg-cream">
         <div className="flex flex-col items-center gap-4">
-          <Sparkles className="animate-pulse text-blue-500" size={32} />
-          <p className="text-zinc-500 font-medium">Loading conversations...</p>
+          <Bot className="animate-pulse text-sky-blue" size={32} />
+          <p className="text-ink font-semibold">Loading conversations...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex h-full min-h-0 w-full bg-white text-[#1f1f1f] font-sans overflow-hidden selection:bg-blue-200">
+    <div className="relative flex h-full min-h-0 w-full bg-cream text-ink font-sans overflow-hidden selection:bg-powder-blue">
 
-      {/* Sidebar collapse toggle, styled like the reference divider button. */}
-      <button
-        type="button"
-        onClick={() => setIsSidebarCollapsed((value) => !value)}
-        aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        className={`absolute top-5 z-30 hidden h-9 w-9 items-center justify-center rounded-full border border-[#dadce0] bg-white text-[#444746] shadow-sm transition-[left,background-color,box-shadow] duration-300 hover:bg-[#f8fafd] hover:shadow-md md:flex ${isSidebarCollapsed ? 'left-4' : 'left-[298px]'
-          }`}
-      >
-        {isSidebarCollapsed ? (
-          <PanelLeftOpen size={18} strokeWidth={1.8} />
-        ) : (
-          <PanelLeftClose size={18} strokeWidth={1.8} />
-        )}
-      </button>
 
       {/* Sidebar */}
       <div
-        className={`hidden shrink-0 overflow-hidden border-r border-[#dde3ea] bg-[#f0f4f9] transition-[width] duration-300 ease-out md:flex ${isSidebarCollapsed ? 'w-0 border-r-0' : 'w-[280px]'
+        className={`hidden shrink-0 overflow-hidden border-r border-border-comic bg-beige transition-[width] duration-300 ease-out md:flex ${isSidebarCollapsed ? 'w-0 border-r-0' : 'w-[280px]'
           }`}
       >
-        <div className="flex h-full w-[280px] shrink-0 flex-col">
-          <div className="flex items-center text-xl font-bold text-[#1f1f1f] mt-4 px-4" > Welcome to ChatBot!  </div>
+        <div className="flex h-full w-[280px] shrink-0 flex-col pt-6">
+          <div className="flex items-center justify-between mt-4 px-4">
+            <span className="text-xl font-bold text-ink">Welcome to NOMI!</span>
+            <div className="relative h-8 w-8 flex items-center justify-center animate-button-bounce">
+              {/* Blue gradient shade behind the button */}
+              <div className="absolute inset-[-6px] rounded-full bg-gradient-to-br from-sky-blue to-powder-blue opacity-75 blur-sm" />
+              <button
+                type="button"
+                onClick={() => setIsSidebarCollapsed(true)}
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar"
+                className="relative z-10 h-full w-full flex items-center justify-center rounded-full border border-border-comic bg-cream text-ink shadow-sm hover:scale-[1.05] active:scale-95 cursor-pointer"
+              >
+                <PanelLeftClose size={16} strokeWidth={1.8} />
+              </button>
+            </div>
+          </div>
           <div className="h-2 shrink-0" />
 
           <div className="px-4 py-2">
             <button
               onClick={createNewChat}
-              className="flex items-center gap-3 bg-[#dde3ea] hover:bg-[#c2c8d1] text-[#1f1f1f] text-sm font-medium px-4 py-3 rounded-full transition-colors shadow-sm"
+              className="flex items-center gap-3 bg-[#c2e7ff] hover:bg-[#b5e0fe] text-[#041e49] border border-border-comic text-sm font-semibold px-4 py-3 rounded-full transition-all shadow-sm hover:scale-[1.01] active:scale-[0.98]"
             >
               <Plus size={18} />
               New chat
@@ -198,15 +205,15 @@ export default function ChatInterface() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 mt-6">
-            <p className="text-xs font-semibold text-[#444746] mb-3 px-3">Recents</p>
+            <p className="text-xs font-bold text-ink-light mb-3 px-3 uppercase tracking-wider">Recents</p>
             <div className="flex flex-col gap-1">
               {conversations.map((chat) => (
                 <button
                   key={chat.id}
                   onClick={() => setActiveChatId(chat.id)}
-                  className={`w-full text-left px-3 py-2.5 rounded-full text-sm truncate transition-colors ${activeChatId === chat.id
-                    ? 'bg-[#e1e5ea] text-[#1f1f1f] font-medium'
-                    : 'text-[#444746] hover:bg-[#e1e5ea]'
+                  className={`w-full text-left px-3 py-2.5 rounded-full text-sm truncate transition-all border ${activeChatId === chat.id
+                    ? 'bg-powder-blue text-ink font-semibold border-border-comic'
+                    : 'text-ink-light border-transparent hover:bg-powder-blue/40 hover:text-ink'
                     }`}
                 >
                   {chat.title}
@@ -218,25 +225,71 @@ export default function ChatInterface() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative h-full min-h-0 w-full">
+      <div className="flex-1 flex flex-col relative h-full min-h-0 w-full comic-grid-bg">
+
+        {/* Header/Navbar: Capsule shape restored, kept as static sibling to prevent overflow */}
+        <header className="mx-auto mt-4 mb-2 w-[95%] max-w-5xl rounded-full border border-border-comic bg-cream px-6 py-3 flex items-center justify-between shadow-sm relative z-30 shrink-0">
+          {/* Left Side */}
+          <div className="flex items-center gap-4">
+            {isSidebarCollapsed && (
+              <div className="relative h-8 w-8 flex items-center justify-center animate-button-bounce">
+                {/* Blue gradient shade behind the button */}
+                <div className="absolute inset-[-6px] rounded-full bg-gradient-to-br from-sky-blue to-powder-blue opacity-75 blur-sm" />
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  aria-label="Expand sidebar"
+                  title="Expand sidebar"
+                  className="relative z-10 h-full w-full flex items-center justify-center rounded-full border border-border-comic bg-cream text-ink shadow-sm hover:scale-[1.05] active:scale-95 cursor-pointer"
+                >
+                  <PanelLeftOpen size={16} strokeWidth={1.8} />
+                </button>
+              </div>
+            )}
+            
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-s font-bold text-ink-light hover:text-ink transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </Link>
+          </div>
+
+          {/* Center: Title */}
+          <div className="text-xl font-bold text-ink uppercase tracking-wider">
+            Nomi
+          </div>
+
+          {/* Right Side */}
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={signOut}
+              className="rounded-full border border-border-comic bg-[#2E4A62] hover:bg-[#1E3A52] px-4 py-2 text-s font-bold text-white transition-all cursor-pointer shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Sign out
+            </button>
+          </div>
+        </header>
 
         {/* Subtle background gradient for empty state */}
         {isChatEmpty && (
-          <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-40">
-            <div className="w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#e8f0fe] via-transparent to-transparent blur-3xl"></div>
+          <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-30">
+            <div className="w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-powder-blue via-transparent to-transparent blur-3xl"></div>
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-y-auto z-10 w-full flex flex-col">
-
+        {/* Chat Messages scroll window */}
+        <div className="flex-1 min-h-0 overflow-y-auto z-10 w-full flex flex-col scrollbar-thin">
           {isChatEmpty ? (
-            <div className="w-full h-full flex flex-col items-center justify-center mt-[-10vh]">
-              <h1 className="text-[2.5rem] text-center font-normal text-[#1f1f1f] mb-8 tracking-tight">
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <h1 className="text-[2.5rem] text-center font-bold text-ink tracking-tight">
                 Hi, let's get into it
               </h1>
             </div>
           ) : (
-            <div className="w-full px-4 md:px-8 lg:px-12 pt-16 pb-32 space-y-8">
+            <div className="w-full pt-4 pb-8 space-y-8 px-4 md:px-8 lg:px-12 transition-all">
               {activeConversation?.messages.map((msg, index) => {
                 const nextMessage = activeConversation.messages[index + 1];
                 const nextMessageText = nextMessage?.text.toLowerCase() || '';
@@ -256,13 +309,13 @@ export default function ChatInterface() {
                   >
                     <div
                       className={`flex gap-4 max-w-[100%] ${msg.sender === 'user'
-                        ? 'bg-[#f0f4f9] px-5 py-3.5 rounded-3xl text-[15px] leading-relaxed text-[#1f1f1f]'
-                        : 'text-[15px] leading-relaxed text-[#1f1f1f]'
+                        ? 'bg-[#B9D4F1] px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed text-ink border border-[#7FA3C7] shadow-sm hover:scale-[1.005]'
+                        : 'bg-cream px-5 py-3.5 rounded-2xl text-[15px] leading-relaxed text-ink border border-border-comic/80 shadow-sm hover:scale-[1.005]'
                         }`}
                     >
                       {msg.sender !== 'user' && msg.id !== 'welcome' && (
                         <div className="mt-1 flex-shrink-0">
-                          <Sparkles size={24} className="text-blue-500" />
+                          <Bot size={24} className="text-sky-blue" />
                         </div>
                       )}
                       <div className="flex flex-col gap-2 pt-0.5">
@@ -278,7 +331,7 @@ export default function ChatInterface() {
                         type="button"
                         onClick={() => regenerateMessage(msg.id)}
                         disabled={isTyping}
-                        className="mt-2 mr-1 inline-flex h-8 items-center gap-1.5 rounded-full border border-[#d7dde5] bg-white px-3 text-xs font-medium text-[#444746] shadow-sm transition-colors hover:bg-[#f0f4f9] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mt-2 mr-1 inline-flex h-8 items-center gap-1.5 rounded-full border border-border-comic bg-cream px-3 text-xs font-semibold text-ink-light shadow-sm transition-all hover:bg-beige hover:text-ink active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                         title="Regenerate response"
                       >
                         <RotateCcw size={14} />
@@ -291,14 +344,14 @@ export default function ChatInterface() {
 
               {isTyping && (
                 <div className="flex justify-start w-full">
-                  <div className="flex gap-4 max-w-[85%]">
-                    <div className="mt-1 flex-shrink-0">
-                      <Sparkles size={24} className="text-blue-400 animate-pulse" />
+                  <div className="flex gap-4 max-w-[85%] bg-cream px-5 py-3 rounded-3xl border border-border-comic/60 shadow-sm">
+                    <div className="mt-0.5 flex-shrink-0">
+                      <Bot size={20} className="text-sky-blue animate-pulse" />
                     </div>
-                    <div className="pt-1.5 flex gap-1">
-                      <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
-                      <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                    <div className="pt-2 flex gap-1">
+                      <div className="w-2 h-2 rounded-full bg-ink-light animate-bounce"></div>
+                      <div className="w-2 h-2 rounded-full bg-ink-light animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 rounded-full bg-ink-light animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -308,46 +361,31 @@ export default function ChatInterface() {
           )}
         </div>
 
-        {/* Input Form Box */}
-        <div className={`w-full absolute left-0 right-0 z-20 flex justify-center px-4 md:px-6 pb-6 transition-all duration-500 ${isChatEmpty ? 'top-1/2 -translate-y-4' : 'bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-6'
-          }`}>
+        {/* Input Form Box - Transparent background so it sits cleanly on the grid */}
+        <div className="w-full z-20 flex justify-center px-4 md:px-6 py-4 bg-transparent shrink-0">
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-4xl bg-white border border-[#e1e5ea] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-3xl p-2 md:p-3 flex items-center gap-2 md:gap-4 transition-all"
+            className="w-full max-w-4xl bg-cream border border-border-comic shadow-sm rounded-2xl px-4 py-2.5 flex items-center gap-2.5 md:gap-4 hover:scale-[1.005] hover:shadow-md focus-within:border-sky-blue focus-within:scale-[1.005] transition-all"
           >
-            {/* <button 
-              type="button"
-              className="p-2 text-[#444746] hover:bg-[#f0f4f9] rounded-full transition-colors shrink-0"
-            >
-              <Plus size={24} />
-            </button> */}
-
             <input
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               type="text"
               placeholder={isChatEmpty ? "Enter a prompt here" : "Type your message..."}
-              className="flex-1 bg-transparent text-[15px] focus:outline-none placeholder-gray-500 text-[#1f1f1f]"
+              className="flex-1 bg-transparent text-[15px] focus:outline-none placeholder-ink-light/50 text-ink font-semibold"
             />
 
             <div className="flex items-center gap-1 md:gap-2 shrink-0">
-              {/* <button type="button" className="hidden md:flex items-center gap-1 text-sm font-medium text-[#444746] hover:bg-[#f0f4f9] px-3 py-1.5 rounded-full transition-colors">
-                Pro <ChevronDown size={16} />
-              </button> */}
-
-              {/* <button type="button" className="p-2 text-[#444746] hover:bg-[#f0f4f9] rounded-full transition-colors">
-                <Mic size={20} />
-              </button> */}
-
               <button
                 type="submit"
-                className="bg-[#c2e7ff] hover:bg-[#b5e0fe] text-[#041e49] p-2.5 rounded-full flex items-center justify-center transition-colors"
+                className="bg-[#2E4A62] hover:bg-[#1E3A52] text-white p-2.5 rounded-xl border border-border-comic flex items-center justify-center shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
               >
-                <ArrowUp size={20} strokeWidth={2.5} />
+                <Send size={16} />
               </button>
             </div>
           </form>
         </div>
+
       </div>
     </div>
   );
