@@ -26,7 +26,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Developer Help Hub",
+  title: "NOMI - AI Assistant",
   description: "Get instant answers to technical configurations, billing queries, and platform details with our interactive support bot.",
 };
 
